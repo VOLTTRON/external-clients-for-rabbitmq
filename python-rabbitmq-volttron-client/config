@@ -1,0 +1,20 @@
+#host parameter is mandatory parameter. fully qualified domain name
+host: 'central'
+amqps_port: 5671
+https_port: 15671
+ca_certfile: '/home/nidd494/tls-gen/basic/result/ca_certificate.pem'
+client_public_cert: '/home/nidd494/tls-gen/basic/result/test-admin_certificate.pem'
+client_private_cert: '/home/nidd494/tls-gen/basic/result/test-admin_key.pem'
+virtual_host: 'test'
+user: 'test-admin'
+password: 'default'
+federation:
+  remote_host: 'node-rmq'
+  remote_amqps_port: 5671
+  remote_virtual_host: 'volttron'
+shovel:
+  remote_host: 'node-rmq'
+  remote_amqps_port: 5671
+  remote_virtual_host: 'volttron'
+  publish_topic: '__pubsub__.test.hello.volttron'
+
