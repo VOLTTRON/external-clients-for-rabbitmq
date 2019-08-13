@@ -4,12 +4,13 @@ import ssl
 import yaml
 import os
 
+
 class RabbitMQSubscriber:
-    def __init__(self, config_path=None):
-        if config_path is None or not os.path.exists(config_path) :
-            self.config_path = os.path.join(os.getcwd(), 'config')
-        else:
-            self.config_path = config_path
+    """
+    RabbitMQ subscriber client using BlockingConnection adapter
+    """
+    def __init__(self):
+        self.config_path = os.path.join(os.getcwd(), 'config')
         with open(self.config_path, 'r') as yaml_file:
             self.config_opts = yaml.load(yaml_file)
         cp = pika.ConnectionParameters(host=self.config_opts['host'],
@@ -28,15 +29,16 @@ class RabbitMQSubscriber:
         queue_name = "test_client_queue"
         result = self.channel.queue_declare(queue_name, exclusive=True)
         binding_key = '__pubsub__.*.devices.#'
-        print("Subscribing to topic: {}".format(binding_key))
+        print("Subscribing to topic from VOLTTRON: {}".format(binding_key))
         self.channel.queue_bind(exchange='volttron',
                            queue=queue_name,
                            routing_key=binding_key)
         self.channel.basic_consume(self.devices_callback,
                               queue=queue_name,
                               no_ack=True)
+        # Subscribing to topic from local RabbitMQ publisher client
         binding_key = '__pubsub__.test.hello.#'
-        print("Subscribing to topic: {}".format(binding_key))
+        print("Subscribing to topic from local RabbitMQ publisher client: {}".format(binding_key))
         self.channel.queue_bind(exchange='volttron',
                            queue=queue_name,
                            routing_key=binding_key)
@@ -45,10 +47,10 @@ class RabbitMQSubscriber:
                               no_ack=True)
 
     def devices_callback(self, ch, method, properties, body):
-        print(" [x] %r:%r" % (method.routing_key, body))
+        print(" Incoming message from VOLTTRON. Topic:{}    Message: {}".format(method.routing_key, body))
 
     def hello_callback(self, ch, method, properties, body):
-        print(" [x] %r:%r" % (method.routing_key, body))
+        print(" Incoming message from local RabbitMQ publisher. Topic:{}    Message: {}".format(method.routing_key, body))
 
 
 if __name__ == '__main__':
