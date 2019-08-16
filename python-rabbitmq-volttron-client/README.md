@@ -9,7 +9,7 @@ in 2 separate machines each connected to it's own broker.
 3. On machine 2, clone TLS generation tool to generate SSL certificates. Please note, this tool needs python3 so please ensure python is installed before continuing.
     ```
     cd ~
-    https://github.com/schandrika/tls-gen.git
+    git clone https://github.com/schandrika/tls-gen.git
     cd ~/tls-gen/basic
     ```
 4. Create self-signed CA signed certificate, server and client certificate pairs (public, private) signed
@@ -17,7 +17,7 @@ by same CA.
     ```
     make PASSWORD=test123
     ```
-    Certifcates will be generated inside 'results' directory.
+    Certifcates will be generated inside 'result' directory.
 
 5. If you would like to generate another pair of client certificates, run the following command.
    ```
@@ -25,26 +25,26 @@ by same CA.
    ```
    New set of client certificates will be generated in results folder. Look for test-admin_certificate.pem and test-admin_key.pem
 
-6. Download non-sudo RabbitMQ.
-    ```
-    cd ~
-    wget -P https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.7/rabbitmq-server-generic-unix-3.7.7.tar.xz
-    tar -xf rabbitmq-server-generic-unix-3.7.7.tar.xz
-    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation rabbitmq_federation_management rabbitmq_shovel rabbitmq_shovel_management rabbitmq_auth_mechanism_ssl
-    ```
-
-7. Clone non VOLTTRON RabbitMQ client example.
+6. Clone non VOLTTRON RabbitMQ client example.
    ```
    cd ~
    git clone https://github.com/VOLTTRON/external-clients-for-rabbitmq.git
    ```
 
-8. Install Erlang packages.
+7. Install Erlang packages.
    ```
    cd external-clients-for-rabbitmq/python-rabbitmq-volttron-client/
    ./rabbit_dependencies.sh <os> <version>
    ```
    For example, os can be 'debian' or 'centos' and distribution name like 'xenial', 'bionic' etc for debian
+
+8. Download non-sudo RabbitMQ.
+    ```
+    wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.7/rabbitmq-server-generic-unix-3.7.7.tar.xz $HOME
+    mkdir $HOME/rabbitmq_server
+    tar -xf ~/rabbitmq-server-generic-unix-3.7.7.tar.xz --directory $HOME/rabbitmq_server/
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation rabbitmq_federation_management rabbitmq_shov$
+    ```
 
 9. Install other python modules needed for running the test client
    ```
@@ -54,10 +54,15 @@ by same CA.
 10. Configure RabbitMQ server to use SSL certificates generated in step 4. Modify rabbitmq.conf such that ssl options are pointing to newly created certificates in step 4 and 5
 
 ssl_options.cacertfile = "path to self signed CA certificate"
+
 ssl_options.certfile = "path to public certificate of server"
+
 ssl_options.keyfile = "path to private certificate of server"
+
 management.listener.ssl_opts.cacertfile = "path to self signed CA certificate"
+
 management.listener.ssl_opts.certfile = "path to public certificate of server"
+
 management.listener.ssl_opts.keyfile = "path to private certificate of server"
 
 10. Copy rabbitmq.conf to RabbitMQ installation path and restart RabbitMQ.
@@ -72,7 +77,7 @@ management.listener.ssl_opts.keyfile = "path to private certificate of server"
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_vhost test
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user test-admin default
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_user_tags test-admin administrator
-    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_permissions test-admin ".*" ".*" ".*"
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl -p test set_permissions test-admin ".*" ".*" ".*"
     ```
 
 12. Start RabbitMQ client program that publishes and subscribes to same topic '__pubsub__.test.hello.#'. You should start
@@ -80,7 +85,21 @@ seeing the data being received.
     ```
     python rabbitmq_gevent_publisher.py
     ```
-
+On machine 2 terminal, you will be able to see data being received for topic- 'Topic:__pubsub__.test.hello.volttron':
+```
+Connection_callback
+Subscribing to topic from VOLTTRON: __pubsub__.*.devices.#
+Subscribing to topic from local RabbitMQ publisher client: __pubsub__.test.hello.#
+Publishing to topic: __pubsub__.test.hello.volttron, i:0
+Publishing to topic: __pubsub__.test.hello.volttron, i:1
+Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+Publishing to topic: __pubsub__.test.hello.volttron, i:2
+Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+Publishing to topic: __pubsub__.test.hello.volttron, i:3
+Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+Publishing to topic: __pubsub__.test.hello.volttron, i:4
+Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+```
 ## Federation Setup:
 
 1. Copy the self signed root CA certificates from machine 1 to machine 2 and vice versa using scp command.
@@ -116,7 +135,9 @@ scripts/core/upgrade-listener
 remote VOLTTRON instance running on machine 1.
 
 ca_certfile: "path to self signed CA certificate"
+
 client_public_cert: "path to public certificate of test-admin"
+
 client_private_cert: "path to private certificate of test-admin"
 
 7. On machine 2, create federation link to upstream RabbitMQ broker.
