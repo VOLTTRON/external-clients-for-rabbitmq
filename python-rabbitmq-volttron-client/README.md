@@ -31,7 +31,7 @@ by same CA.
    git clone https://github.com/VOLTTRON/external-clients-for-rabbitmq.git
    ```
 
-7. Install Erlang packages.
+7. Install Erlang packages. You will sudo access for this. 
    ```
    cd external-clients-for-rabbitmq/python-rabbitmq-volttron-client/
    ./rabbit_dependencies.sh <os> <version>
@@ -43,7 +43,7 @@ by same CA.
     wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.7/rabbitmq-server-generic-unix-3.7.7.tar.xz $HOME
     mkdir $HOME/rabbitmq_server
     tar -xf ~/rabbitmq-server-generic-unix-3.7.7.tar.xz --directory $HOME/rabbitmq_server/
-    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation rabbitmq_federation_management rabbitmq_shov$
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation rabbitmq_federation_management rabbitmq_shovel
     ```
 
 9. Install other python modules needed for running the test client
@@ -51,28 +51,28 @@ by same CA.
    pip install -r requirements.txt
    ```
 
-10. Configure RabbitMQ server to use SSL certificates generated in step 4. Modify rabbitmq.conf such that ssl options are pointing to newly created certificates in step 4 and 5
+10. Configure RabbitMQ server to use SSL certificates generated in step 4. Modify rabbitmq.conf in the current directory (~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client) such that ssl options are pointing to newly created certificates in step 4 and 5.
 
-ssl_options.cacertfile = "path to self signed CA certificate"
+```
+ssl_options.cacertfile = "path to self signed CA certificate. <home>/<tls-gen-checkout-dir>/basic/result/ca_certificate.pem"
+ssl_options.certfile = "path to public certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_certificate.pem"
+ssl_options.keyfile = "path to private certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_key.pem"
+management.listener.ssl_opts.cacertfile = "path to self signed CA certificate. <home>/<tls-gen-checkout-dir>/basic/result/ca_certificate.pem"
+management.listener.ssl_opts.certfile = "path to public certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_certificate.pem"
+management.listener.ssl_opts.keyfile = "path to private certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_key.pem"
+```
 
-ssl_options.certfile = "path to public certificate of server"
+> [!NOTE]
+> If you don't want to use default port. Modify these as well in the rabbitmq.conf file
 
-ssl_options.keyfile = "path to private certificate of server"
-
-management.listener.ssl_opts.cacertfile = "path to self signed CA certificate"
-
-management.listener.ssl_opts.certfile = "path to public certificate of server"
-
-management.listener.ssl_opts.keyfile = "path to private certificate of server"
-
-10. Copy rabbitmq.conf to RabbitMQ installation path and restart RabbitMQ.
+11. Copy rabbitmq.conf to RabbitMQ installation path and restart RabbitMQ.
    ```
    cp rabbitmq.conf ~/rabbitmq_server/rabbitmq_server-3.7.7/etc/rabbitmq/
    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl stop
    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-server -detached
    ```
 
-11. Create virtual host and test admin user
+12. Create virtual host and test-admin user. The user name (in this case, test-admin) should match the  value passed to CN parameter in step 5 (make client-cert CN=test-admin)
     ```
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_vhost test
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user test-admin default
@@ -80,7 +80,9 @@ management.listener.ssl_opts.keyfile = "path to private certificate of server"
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl -p test set_permissions test-admin ".*" ".*" ".*"
     ```
 
-12. Start RabbitMQ client program that publishes and subscribes to same topic '__pubsub__.test.hello.#'. You should start
+13. Update the file config in the current directory((~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client/config) to have the correct hostname of the machine, the cert file paths, and rabbitmq ports (cert file paths and ports should match corresponding values set in step 10)
+
+14. Start RabbitMQ client program that publishes and subscribes to same topic '__pubsub__.test.hello.#'. You should start
 seeing the data being received.
     ```
     python rabbitmq_gevent_publisher.py
