@@ -82,7 +82,29 @@ by same CA.
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl -p test set_permissions test-admin ".*" ".*" ".*"
     ```
 
-13. Update the file config in the current directory((~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client/config) to have the correct hostname of the machine, the cert file paths, and rabbitmq ports (cert file paths and ports should match corresponding values set in step 10). The value of virtual_host and user should match the values provided in add_vhost and add_user commands in Step 12.
+13. Update the file config in the current directory((~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client/config) to have the correct hostname of the machine, the cert file paths, and rabbitmq ports (cert file paths and ports should match corresponding values set in step 10). The value of virtual_host and user should match the values provided in add_vhost and add_user commands in Step 12. Under federation and shovel - please provide the host name of machine1 (machine running volttron) and the remote_virtual_host parameter under federation and shovel should be 'volttron'. Below is an example config 
+
+    ```
+    host parameter is mandatory parameter. fully qualified domain name
+    host: <hostname of machine2>
+    amqps_port: <amqps port of rabbitmq on machine 2. Default is 5671>
+    https_port: <https port of rabbitmq on machine 2. Default is 15671>
+    ca_certfile: '<home-dir>/tls-gen/basic/result/ca_certificate.pem'
+    client_public_cert: '<home-dir>/tls-gen/basic/result/test-admin_certificate.pem'
+    client_private_cert: '<home-dir>/tls-gen/basic/result/test-admin_key.pem'
+    virtual_host: '<virtual host created in step 12. In this example, test>'
+    user: '<user created in step 12. In this example, test-admin>'
+    password: 'default'
+    federation:
+      remote_host: '<host name of machine1 (running volttron)>'
+      remote_amqps_port: <amqps port of rabbitmq on machine 1. Default is 5671>
+      remote_virtual_host: 'volttron'
+    shovel:
+      remote_host: '<host name of machine1 (running volttron)>'
+      remote_amqps_port: <amqps port of rabbitmq on machine 1. Default is 5671>
+      remote_virtual_host: 'volttron'
+      publish_topic: '__pubsub__.test.hello.volttron'
+    ```
 
 14. Start RabbitMQ client program that publishes and subscribes to same topic '__pubsub__.test.hello.#'. You should start
 seeing the data being received. 
@@ -145,14 +167,6 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
     vctl start --tag master_driver
     scripts/core/upgrade-listener
     ```
-
-6. On machine 2, modify config to point to path of 'test-admin' client certificates. Set the hostname, amqps port and virtual host of remote VOLTTRON instance running on machine 1.
-
-    ca_certfile: "path to self signed CA certificate"
-
-    client_public_cert: "path to public certificate of test-admin"
-
-    client_private_cert: "path to private certificate of test-admin"
 
 7. On machine 2, create federation link to upstream RabbitMQ broker.
 ```
