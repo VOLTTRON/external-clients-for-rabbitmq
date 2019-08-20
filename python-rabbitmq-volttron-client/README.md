@@ -147,7 +147,17 @@ client_private_cert: "path to private certificate of test-admin"
 python create_parameter.py create federation
 ```
 
-8. On machine 2, Create user 'test-admin' to get access to the VOLTTRON instance on machine 1.
+8. Start the client program. The federation status is not shown if there are no subscribers bound to the 'volttron' exchange.
+```
+python rabbitmq_gevent_publisher.py
+```
+
+9. Check the federation status. 
+```
+~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
+```
+
+10. On machine 2, Create user 'test-admin' to get access to the VOLTTRON instance on machine 1.
 ```
 volttron-ctl rabbitmq add-user test-admin default
 Do you want to set READ permission  [Y/n]
@@ -155,10 +165,10 @@ Do you want to set WRITE permission  [Y/n]
 Do you want to set CONFIGURE permission  [Y/n]
 ```
 
-9. You should start seeing device data being received on the machine 2.
+11. You should start seeing device data being received on the machine 2.
 On machine 2:
 
-10. To get messages published by RabbitMQ client on machine 2 into VOLTTRON on machine 1, we need to create a federation
+12. To get messages published by RabbitMQ client on machine 2 into VOLTTRON on machine 1, we need to create a federation
 link to upstream server (machine 2) on machine 1. We can use VOLTTRON 'volttron-ctl' utility command to it.
 
 On machine 1:
@@ -168,7 +178,7 @@ vcfg --rabbitmq federation [optional path to rabbitmq_federation_config.yml
 containing the details of the upstream (machine2) hostname, port and vhost.]
 ```
 
-11. Create user <instance_name>-admin to get access to virtual host 'test' on machine 2.
+13. Create user <instance_name>-admin to get access to virtual host 'test' on machine 2.
 
 ```
 ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user v1-admin default
@@ -177,9 +187,9 @@ containing the details of the upstream (machine2) hostname, port and vhost.]
 ```
 Here we assume, 'v1' is instance name of VOLTTRON instance running on machine 1.
 
-12. You should start seeing messages with 'hello' topic in the VOLTTRON logs now.
+14. You should start seeing messages with 'hello' topic in the VOLTTRON logs now.
 
-13. To delete the federation link to upstream server on machine 1.
+15. To delete the federation link to upstream server on machine 1.
 
 On machine 2:
 
@@ -187,7 +197,7 @@ On machine 2:
 python create_parameter.py delete federation
 ```
 
-14. To delete the federation link to upstream server on machine 2, use 'volttron-ctl' utility command.
+15. To delete the federation link to upstream server on machine 2, use 'volttron-ctl' utility command.
 
 On machine 1,
 
