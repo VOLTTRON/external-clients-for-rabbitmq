@@ -19,7 +19,7 @@ by same CA.
     ```
     Certifcates will be generated inside 'result' directory.
 
-5. If you would like to generate another pair of client certificates, run the following command.
+5. Generate another pair of client certificates using the below command with CN=<client name>. The CN parameter value provided will be the name of the user that would connect to machine 1 RabbitMQ server.
    ```
    make client-cert CN=test-admin
    ```
@@ -31,27 +31,29 @@ by same CA.
    git clone https://github.com/VOLTTRON/external-clients-for-rabbitmq.git
    ```
 
-7. Install Erlang packages. You will sudo access for this. 
+7. Install Erlang packages. You will need sudo access for this. 
    ```
    cd external-clients-for-rabbitmq/python-rabbitmq-volttron-client/
    ./rabbit_dependencies.sh <os> <version>
    ```
-   For example, os can be 'debian' or 'centos' and distribution name like 'xenial', 'bionic' etc for debian
+   OS can be 'debian' or 'centos'. Distribution names: 'xenial', 'bionic' etc. for debian. 6 or 7 for centos
 
 8. Download non-sudo RabbitMQ.
     ```
-    wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.7/rabbitmq-server-generic-unix-3.7.7.tar.xz $HOME
-    mkdir $HOME/rabbitmq_server
-    tar -xf ~/rabbitmq-server-generic-unix-3.7.7.tar.xz --directory $HOME/rabbitmq_server/
-    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation  rabbitmq_federation_management rabbitmq_shovel rabbitmq_auth_mechanism_ssl
+    cd ~
+    wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.7/rabbitmq-server-generic-unix-3.7.7.tar.xz
+    mkdir rabbitmq_server
+    tar -xf ~/rabbitmq-server-generic-unix-3.7.7.tar.xz --directory ./rabbitmq_server/
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation  rabbitmq_federation_management rabbitmq_shovel rabbitmq_auth_mechanism_ssl rabbitmq_shovel_management rabbitmq_amqp1_0
     ```
 
 9. Install other python modules needed for running the test client
    ```
+   cd ~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client
    pip install -r requirements.txt
    ```
 
-10. Configure RabbitMQ server to use SSL certificates generated in step 4. Modify rabbitmq.conf in the current directory (~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client) such that ssl options are pointing to newly created certificates in step 4 and 5.
+10. Configure RabbitMQ server to use SSL certificates generated in step 4. Modify rabbitmq.conf in the current directory (~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client) such that ssl options are pointing to newly created certificates in step 4.
 
 ```
 ssl_options.cacertfile = "path to self signed CA certificate. <home>/<tls-gen-checkout-dir>/basic/result/ca_certificate.pem"
@@ -80,10 +82,10 @@ management.listener.ssl_opts.keyfile = "path to private certificate of server. <
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl -p test set_permissions test-admin ".*" ".*" ".*"
     ```
 
-13. Update the file config in the current directory((~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client/config) to have the correct hostname of the machine, the cert file paths, and rabbitmq ports (cert file paths and ports should match corresponding values set in step 10)
+13. Update the file config in the current directory((~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client/config) to have the correct hostname of the machine, the cert file paths, and rabbitmq ports (cert file paths and ports should match corresponding values set in step 10). The value of virtual_host and user should match the values provided in add_vhost and add_user commands in Step 12.
 
 14. Start RabbitMQ client program that publishes and subscribes to same topic '__pubsub__.test.hello.#'. You should start
-seeing the data being received.
+seeing the data being received. 
     ```
     python rabbitmq_gevent_publisher.py
     ```
@@ -102,28 +104,40 @@ Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message:
 Publishing to topic: __pubsub__.test.hello.volttron, i:4
 Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
 ```
+This verifies that we are able to successfully subscribe andd publish to the local message bus. 
+
 ## Federation Setup:
 
-1. Copy the self signed root CA certificates from machine 1 to machine 2 and vice versa using scp command.
+1. Copy the self signed root CA certificates from machine 1 to machine 2 and vice versa using scp command. For example to copy from machine 1 (volttron) to machine 2(non volttron)
 
-2. Concatenate CA certificate of remote machine with the one on the local machine.
+```
+scp $VOLTTRON_HOME/certificates/certs/<volttron_instancename>-root-ca.crt <user>@<machine2 ip or hostname>:<path on machine2>
+```
+And to copy from machine 2 to machine 1
+
+```
+scp ~/tls-gen/basic/result/ca_certificate.pem <username>@<hostname or ip of machine1>:<path on machine1>
+
+```
+
+2. Concatenate CA certificate of remote machine with the one on the local machine. On machine1 (volttron machine) the certificate of machine2 should be added to <instance_name>-trusted-cas.crt. On machine2 the certificate of machine1 should be appened to ~/tls-gen/basic/result/ca-certificate.pem
 
 For example:
 
-On machine 1: cat /tmp/ca_certificate.pem >> $VOLTTRON_HOME/certificates/certs/v1-trusted-cas.crt
+On machine 1: cat <path used in the second scp command above>/ca_certificate.pem >> $VOLTTRON_HOME/certificates/certs/v1-trusted-cas.crt
 
 On machine 2: cat /tmp/v1-root-ca.crt >> ~/tls-gen/basic/result/ca-certificate.pem
 
-3. Restart RabbitMQ brokers on both machines.
+3. Restart RabbitMQ brokers on both machines. Repeat the following command on both machines
 ```
    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl stop
    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-server -detached
 ```
 
-4. On machine 1, modify Listener agent to subscribe to all topics from all pathforms. Open the file examples/ListenerAgent/listener/agent.py.
-Search for @PubSub.subscribe(‘pubsub’, ‘’) and replace that line with @PubSub.subscribe(‘pubsub’, ‘devices’, all_platforms=True)
+4. On machine 1, modify Listener agent to subscribe to all topics from all pathforms. Open the file <volttron_source_home>/examples/ListenerAgent/listener/agent.py.
+Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.subscribe('pubsub', 'devices', all_platforms=True)
 
-5. Install master driver, listener agent and restart VOLTTRON.
+5. Install listener agent and master driver agent with a fake device and restart VOLTTRON. Start both agents
 
 ```
 ./stop-volttron
