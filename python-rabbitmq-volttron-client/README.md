@@ -55,14 +55,14 @@ by same CA.
 
 10. Configure RabbitMQ server to use SSL certificates generated in step 4. Modify rabbitmq.conf in the current directory (~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client) such that ssl options are pointing to newly created certificates in step 4.
 
-```
-ssl_options.cacertfile = "path to self signed CA certificate. <home>/<tls-gen-checkout-dir>/basic/result/ca_certificate.pem"
-ssl_options.certfile = "path to public certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_certificate.pem"
-ssl_options.keyfile = "path to private certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_key.pem"
-management.listener.ssl_opts.cacertfile = "path to self signed CA certificate. <home>/<tls-gen-checkout-dir>/basic/result/ca_certificate.pem"
-management.listener.ssl_opts.certfile = "path to public certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_certificate.pem"
-management.listener.ssl_opts.keyfile = "path to private certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_key.pem"
-```
+    ```
+    ssl_options.cacertfile = "path to self signed CA certificate. <home>/<tls-gen-checkout-dir>/basic/result/ca_certificate.pem"
+    ssl_options.certfile = "path to public certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_certificate.pem"
+    ssl_options.keyfile = "path to private certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_key.pem"
+    management.listener.ssl_opts.cacertfile = "path to self signed CA certificate. <home>/<tls-gen-checkout-dir>/basic/result/ca_certificate.pem"
+    management.listener.ssl_opts.certfile = "path to public certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_certificate.pem"
+    management.listener.ssl_opts.keyfile = "path to private certificate of server. <home>/<tls-gen-checkout-dir>/basic/result/server_key.pem"
+    ```
 
 > [!NOTE]
 > If you don't want to use default port. Modify these as well in the rabbitmq.conf file
@@ -90,71 +90,69 @@ seeing the data being received.
     python rabbitmq_gevent_publisher.py
     ```
 On machine 2 terminal, you will be able to see data being received for topic- 'Topic:__pubsub__.test.hello.volttron':
-```
-Connection_callback
-Subscribing to topic from VOLTTRON: __pubsub__.*.devices.#
-Subscribing to topic from local RabbitMQ publisher client: __pubsub__.test.hello.#
-Publishing to topic: __pubsub__.test.hello.volttron, i:0
-Publishing to topic: __pubsub__.test.hello.volttron, i:1
-Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-Publishing to topic: __pubsub__.test.hello.volttron, i:2
-Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-Publishing to topic: __pubsub__.test.hello.volttron, i:3
-Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-Publishing to topic: __pubsub__.test.hello.volttron, i:4
-Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-```
+    ```
+    Connection_callback
+    Subscribing to topic from VOLTTRON: __pubsub__.*.devices.#
+    Subscribing to topic from local RabbitMQ publisher client: __pubsub__.test.hello.#
+    Publishing to topic: __pubsub__.test.hello.volttron, i:0
+    Publishing to topic: __pubsub__.test.hello.volttron, i:1
+    Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+    Publishing to topic: __pubsub__.test.hello.volttron, i:2
+    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+    Publishing to topic: __pubsub__.test.hello.volttron, i:3
+    Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+    Publishing to topic: __pubsub__.test.hello.volttron, i:4
+    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+    ```
 This verifies that we are able to successfully subscribe andd publish to the local message bus. 
 
 ## Federation Setup:
 
 1. Copy the self signed root CA certificates from machine 1 to machine 2 and vice versa using scp command. For example to copy from machine 1 (volttron) to machine 2(non volttron)
 
-```
-scp $VOLTTRON_HOME/certificates/certs/<volttron_instancename>-root-ca.crt <user>@<machine2 ip or hostname>:<path on machine2>
-```
+    ```
+    scp $VOLTTRON_HOME/certificates/certs/<volttron_instancename>-root-ca.crt <user>@<machine2 ip or hostname>:<path on machine2>
+    ```
 And to copy from machine 2 to machine 1
 
-```
-scp ~/tls-gen/basic/result/ca_certificate.pem <username>@<hostname or ip of machine1>:<path on machine1>
-
-```
+    ```
+    scp ~/tls-gen/basic/result/ca_certificate.pem <username>@<hostname or ip of machine1>:<path on machine1>
+    ```
 
 2. Concatenate CA certificate of remote machine with the one on the local machine. On machine1 (volttron machine) the certificate of machine2 should be added to <instance_name>-trusted-cas.crt. On machine2 the certificate of machine1 should be appened to ~/tls-gen/basic/result/ca-certificate.pem
 
-For example:
+    For example:
 
-On machine 1: cat <path used in the second scp command above>/ca_certificate.pem >> $VOLTTRON_HOME/certificates/certs/v1-trusted-cas.crt
+    On machine 1: cat <path used in the second scp command above>/ca_certificate.pem >> $VOLTTRON_HOME/certificates/certs/v1-trusted-cas.crt
 
-On machine 2: cat /tmp/v1-root-ca.crt >> ~/tls-gen/basic/result/ca-certificate.pem
+    On machine 2: cat /tmp/v1-root-ca.crt >> ~/tls-gen/basic/result/ca-certificate.pem
 
 3. Restart RabbitMQ brokers on both machines. Repeat the following command on both machines
-```
+    ```
    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl stop
    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-server -detached
-```
+    ```
 
 4. On machine 1, modify Listener agent to subscribe to all topics from all pathforms. Open the file <volttron_source_home>/examples/ListenerAgent/listener/agent.py.
 Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.subscribe('pubsub', 'devices', all_platforms=True)
 
 5. Install listener agent and master driver agent with a fake device and restart VOLTTRON. Start both agents
 
-```
-./stop-volttron
-vcfg --agent master_driver
-./start-volttron
-vctl start --tag master_driver
-scripts/core/upgrade-listener
-```
+    ```
+    ./stop-volttron
+    vcfg --agent master_driver
+    ./start-volttron
+    vctl start --tag master_driver
+    scripts/core/upgrade-listener
+    ```
 
-6. On machine 2, modify config to point to path of 'test-admin' client certificates. Set the hostname, amqps port and virtual host of
-remote VOLTTRON instance running on machine 1.
+6. On machine 2, modify config to point to path of 'test-admin' client certificates. Set the hostname, amqps port and virtual host of remote VOLTTRON instance running on machine 1.
 
-ca_certfile: "path to self signed CA certificate"
+    ca_certfile: "path to self signed CA certificate"
 
-client_public_cert: "path to public certificate of test-admin"
+    client_public_cert: "path to public certificate of test-admin"
 
-client_private_cert: "path to private certificate of test-admin"
+    client_private_cert: "path to private certificate of test-admin"
 
 7. On machine 2, create federation link to upstream RabbitMQ broker.
 ```
