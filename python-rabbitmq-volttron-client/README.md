@@ -43,7 +43,7 @@ by same CA.
     wget https://github.com/rabbitmq/rabbitmq-server/releases/download/v3.7.7/rabbitmq-server-generic-unix-3.7.7.tar.xz $HOME
     mkdir $HOME/rabbitmq_server
     tar -xf ~/rabbitmq-server-generic-unix-3.7.7.tar.xz --directory $HOME/rabbitmq_server/
-    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation rabbitmq_federation_management rabbitmq_shovel
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_management rabbitmq_federation  rabbitmq_federation_management rabbitmq_shovel rabbitmq_auth_mechanism_ssl
     ```
 
 9. Install other python modules needed for running the test client
