@@ -189,7 +189,6 @@ containing the details of the upstream (machine2) hostname, port and vhost.]
 
 ```
 ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user v1-admin default
-~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_user_tags v1-admin administrator
 ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_permissions v1-admin ".*" ".*" ".*"
 ```
 Here we assume, 'v1' is instance name of VOLTTRON instance running on machine 1.
@@ -232,11 +231,22 @@ can trust them. Also install master driver and listener agents on machine 1. Fol
 2. To create a shovel link to send messages from machine 2 to machine 1, configure shovel options in config file to point to hostname,
 port and virtual host of machine 1 and then create shovel parameter.
 
+On machine 2, 
+```
+cd ~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client
+```
+
+Update shovel parameters (hostname, port) in the config file.
 ```
 python create_parameter.py create shovel
 ```
 
-3. Create user 'test-admin' to get access to the VOLTTRON instance on machine 1.
+3. Run the test client program. The shovel will forward 'hello' messages from the test program to VOLTTRON instance on machine 1.
+```
+python rabbitmq_gevent_publisher.py
+```
+
+4. Create user 'test-admin' to get access to the VOLTTRON instance on machine 1.
 ```
 volttron-ctl rabbitmq add-user test-admin default
 Do you want to set READ permission  [Y/n]
@@ -244,12 +254,73 @@ Do you want to set WRITE permission  [Y/n]
 Do you want to set CONFIGURE permission  [Y/n]
 ```
 
-4. You should see device data being received on the machine 2.
-On machine 2:
+5. You should see hello messages being received on the machine 1.
 
+On machine 1:
+```
+2019-08-20 10:46:07,281 (listeneragent-3.2 10844) listener.agent INFO: Peer: pubsub, Sender: test-admin:, Bus: test, Topic: hello, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message: 
+'Hello from NON volttron client'
+```
 
-5. To delete the shovel link to machine 1.
+6. To create a shovel connection to forward messages with 'devices' topic from master driver agent running on machine 1 to the test program on machine 2.
+
+On machine, use 'volttron-cfg ' utility command
 
 ```
+(volttron)nidd494@node-zmq:~/volttron$ vcfg --rabbitmq shovel
+
+Your VOLTTRON_HOME currently set to: /home/nidd494/.volttron
+
+Is this the volttron you are attempting to setup? [Y]: 
+Name of this volttron instance: [collector1]: 
+Number of destination hosts to configure: [1]: 
+Hostname of the destination server:  central
+Port of the destination server:  [5671]: 
+Virtual host of the destination server:  [volttron]: test
+
+Do you want shovels for PUBSUB communication?  [N]: y
+Name of the agent publishing the topic: platform.driver
+List of PUBSUB topics to publish to this remote instance (comma seperated) devices
+
+Do you want shovels for RPC communication?  [N]: n
+2019-08-20 10:49:31,479 volttron.utils.rmq_mgmt DEBUG: Create READ, WRITE and CONFIGURE permissions for the user: collector1.platform.driver
+2019-08-20 10:49:31,590 volttron.utils.rmq_mgmt DEBUG: Create READ, WRITE and CONFIGURE permissions for the user: collector1.platform.driver
+```
+
+7. Add user <instance_name>-platform.driver to get access to virtual host 'test' on machine 2.
+
+On machine 2,
+
+```
+~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user v1.platform.driver default
+~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl -p test set_permissions v1.platform.driver ".*" ".*" ".*"
+```
+Here we assume, 'v1' is instance name of VOLTTRON instance running on machine 1.
+
+8. You should start seeing messages for 'devices' topic on machine 2.
+
+```
+Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+Incoming message from local RabbitMQ publisher. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    Message: {"headers":{"Date":"2019-08-20T17:52:05.001937+00:00","TimeStamp":"2019-08-20T17:52:05.001937+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-20T17:52:05.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
+```
+
+9. To delete the shovel link to machine 1.
+
+On machine 2,
+```
 python create_parameter.py delete shovel
+```
+
+10. To delete the shovel link to machine 2, use 'volttron-ctl' utility command.
+
+On machine 1,
+
+a. Get the federation upstream parameter nam
+```
+vctl rabbitmq list-shovel-parameters
+```
+
+b. Grab the shovel link name and run the below command to remove it.
+```
+vctl rabbitmq remove-shovel-parameters shovel-central-devices
 ```
