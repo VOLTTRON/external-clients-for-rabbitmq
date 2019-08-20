@@ -166,7 +166,14 @@ Do you want to set CONFIGURE permission  [Y/n]
 ```
 
 11. You should start seeing device data being received on the machine 2.
+
 On machine 2:
+```
+Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+Publishing to topic: __pubsub__.test.hello.volttron, i:19
+Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+Incoming message from VOLTTRON. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    Message: {"headers":{"Date":"2019-08-20T02:48:00.002375+00:00","TimeStamp":"2019-08-20T02:48:00.002375+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-20T02:48:00.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
+```
 
 12. To get messages published by RabbitMQ client on machine 2 into VOLTTRON on machine 1, we need to create a federation
 link to upstream server (machine 2) on machine 1. We can use VOLTTRON 'volttron-ctl' utility command to it.
@@ -188,6 +195,12 @@ containing the details of the upstream (machine2) hostname, port and vhost.]
 Here we assume, 'v1' is instance name of VOLTTRON instance running on machine 1.
 
 14. You should start seeing messages with 'hello' topic in the VOLTTRON logs now.
+
+On machine 1:
+```
+2019-08-19 19:52:25,016 (listeneragent-3.2 10844) listener.agent INFO: Peer: pubsub, Sender: test-admin:, Bus: test, Topic: hello, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message: 
+'Hello from NON volttron client'
+```
 
 15. To delete the federation link to upstream server on machine 1.
 
