@@ -66,7 +66,7 @@ class RabbitMQPublisher:
         Publisher loop to publish message using local RabbitMQ message broker
         :return:
         """
-        max_attempts = 10
+        max_attempts = 50
 
         # while not self.connection_ready:
         #     gevent.sleep(0.1)
