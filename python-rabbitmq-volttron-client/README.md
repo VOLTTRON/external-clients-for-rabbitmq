@@ -128,7 +128,7 @@ On machine 2 terminal, you will be able to see data being received for topic- 'T
     ```
 This verifies that we are able to successfully subscribe andd publish to the local message bus. 
 
-## Federation Setup:
+## Federation setup to get data from VOLTTRON (machine 1) to non VOLTTRON client (machine 2):
 
 1. Copy the self signed root CA certificates from machine 1 to machine 2 and vice versa using scp command. For example to copy from machine 1 (volttron) to machine 2(non volttron)
 
@@ -169,56 +169,95 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
     ```
 
 7. On machine 2, create federation link to upstream RabbitMQ broker.
-```
-python create_parameter.py create federation
-```
+    ```
+    python create_parameter.py create federation
+    ```
 
-8. Start the client program. The federation status is not shown if there are no subscribers bound to the 'volttron' exchange.
-```
-python rabbitmq_gevent_publisher.py
-```
+8. Start the client program. This program subscribes to the volttron exchange upstream and publishes to the upstream 50 times. The federation status is not shown if there are no subscribers bound to the 'volttron' exchange. 
+    ```
+    python rabbitmq_gevent_publisher.py
+    ```
 
-9. Check the federation status. 
-```
-~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
-```
+9. Check the federation status from a different terminal on machine 2
+    ```
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
+    ```
+   This should show the status with auth_failure,"ACCESS_REFUSED"
+   ```
+   d3x140@central:~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client$ ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
+[[{exchange,<<"volttron">>},
+  {upstream_exchange,<<"volttron">>},
+  {type,exchange},
+  {vhost,<<"test">>},
+  {upstream,<<"non-volttron-federation">>},
+  {id,<<"6c7e2093">>},
+  {status,error},
+  {error,{auth_failure,"ACCESS_REFUSED - Login was refused using authentication mechanism EXTERNAL. For details see the broker logfile."}},
+  {uri,<<"amqps://node-zmq:5671/volttron">>},
+  {timestamp,{{2019,8,20},{17,12,33}}}]]
 
-10. On machine 2, Create user 'test-admin' to get access to the VOLTTRON instance on machine 1.
-```
-volttron-ctl rabbitmq add-user test-admin default
-Do you want to set READ permission  [Y/n]
-Do you want to set WRITE permission  [Y/n]
-Do you want to set CONFIGURE permission  [Y/n]
-```
+   ```
+   This status means that we are able to connect successfully but the user is not authorized to access the virtual host on the remote machine
 
-11. You should start seeing device data being received on the machine 2.
 
-On machine 2:
-```
-Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-Publishing to topic: __pubsub__.test.hello.volttron, i:19
-Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-Incoming message from VOLTTRON. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    Message: {"headers":{"Date":"2019-08-20T02:48:00.002375+00:00","TimeStamp":"2019-08-20T02:48:00.002375+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-20T02:48:00.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
-```
+10. On machine 1 (volttron machine), Create user 'test-admin' (machine2 user) to get access to the VOLTTRON instance on machine 1. Provide the user with read, write and configure access
+    ```
+    volttron-ctl rabbitmq add-user test-admin default
+    Do you want to set READ permission  [Y/n]
+    Do you want to set WRITE permission  [Y/n]
+    Do you want to set CONFIGURE permission  [Y/n]
+    ```
 
-12. To get messages published by RabbitMQ client on machine 2 into VOLTTRON on machine 1, we need to create a federation
-link to upstream server (machine 2) on machine 1. We can use VOLTTRON 'volttron-ctl' utility command to it.
+11. Rerun rabbitmq_gevent_publisher.py if it is not running. This will subscribe to the machine1's rabbitmq topic and also publish to it 
+
+    ```
+    python rabbitmq_gevent_publisher.py
+    ```
+    You should start seeing device data being received on the machine 2.
+
+    On machine 2:
+    ```
+    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+    Publishing to topic: __pubsub__.test.hello.volttron, i:19
+    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+    Incoming message from VOLTTRON. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    Message: {"headers":{"Date":"2019-08-20T02:48:00.002375+00:00","TimeStamp":"2019-08-20T02:48:00.002375+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-20T02:48:00.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
+    ```
+        
+        
+## Federation setup to get data from non VOLTTRON client (machine 2) to VOLTTRON (machine 1) :
+
+Since we have already exchanged the root CA certificates between the two machines, we don't have to repeat it for the reverse direction federation setup.
+
+1. To get messages published by RabbitMQ client on machine 2 into VOLTTRON on machine 1, we need to create a federation
+link on machine 1. We can use VOLTTRON 'volttron-ctl' utility command to it.
 
 On machine 1:
 
-```
-vcfg --rabbitmq federation [optional path to rabbitmq_federation_config.yml
-containing the details of the upstream (machine2) hostname, port and vhost.]
-```
+    ```
+    vcfg --rabbitmq federation 
+    ```
 
-13. Create user <instance_name>-admin to get access to virtual host 'test' on machine 2.
+When prompted provide upstream hostname as machine2's hostname and provide virtualhost as 'test'( should match virtual host created in step 12 above)
+    ```
+    (volttron)d3x140@node-zmq:~/volttron$ vcfg --rabbitmq federation
 
-```
-~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user v1-admin default
-~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_permissions v1-admin ".*" ".*" ".*"
-```
-Here we assume, 'v1' is instance name of VOLTTRON instance running on machine 1.
+    Your VOLTTRON_HOME currently set to: /home/d3x140/.volttron
 
+    Is this the volttron you are attempting to setup? [Y]:
+    Name of this volttron instance: [collector1]:
+    Number of upstream servers to configure: [1]:
+    Hostname of the upstream server:  central
+    Port of the upstream server:  [5671]:
+    Virtual host of the upstream server:  [volttron]: test
+    ```
+ 
+2. Create user <instance_name>-admin on machine 2. In the below example command, v1 is the instance name of the volttron instance
+    ```
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user v1-admin default
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl -p test set_permissions v1-admin ".*" ".*" ".*"
+    ```
+
+3. Run the 
 14. You should start seeing messages with 'hello' topic in the VOLTTRON logs now.
 
 On machine 1:
