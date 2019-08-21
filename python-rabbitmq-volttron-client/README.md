@@ -171,17 +171,17 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
     scripts/core/upgrade-listener
     ```
 
-7. On machine 2, create federation link to upstream RabbitMQ broker.
+6. On machine 2, create federation link to upstream RabbitMQ broker.
     ```
     python create_parameter.py create federation
     ```
 
-8. Start the client program. This program subscribes to the volttron exchange upstream and publishes to the upstream 50 times. The federation status is not shown if there are no subscribers bound to the 'volttron' exchange. 
+7. Start the client program. This program subscribes to the volttron exchange upstream and publishes to the upstream 50 times. The federation status is not shown if there are no subscribers bound to the 'volttron' exchange. 
     ```
     python rabbitmq_gevent_client.py
     ```
 
-9. Check the federation status from a different terminal on machine 2
+8. Check the federation status from a different terminal on machine 2
 
     ```
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
@@ -205,7 +205,7 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
    This status means that we are able to connect successfully but the user is not authorized to access the virtual host on the remote machine
 
 
-10. On machine 1 (volttron machine), Create user 'test-admin' (machine2 user) to get access to the VOLTTRON instance on machine 1. Provide the user with read, write and configure access
+9. On machine 1 (volttron machine), Create user 'test-admin' (machine2 user) to get access to the VOLTTRON instance on machine 1. Provide the user with read, write and configure access
     ```
     volttron-ctl rabbitmq add-user test-admin default
     Do you want to set READ permission  [Y/n]
@@ -213,7 +213,7 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
     Do you want to set CONFIGURE permission  [Y/n]
     ```
 
-11. Rerun rabbitmq_gevent_client.py if it is not running. This will subscribe to the machine1's rabbitmq topic and also publish to it 
+10. Rerun rabbitmq_gevent_client.py if it is not running. This will subscribe to the machine1's rabbitmq topic and also publish to it 
 
     ```
     python rabbitmq_gevent_client.py
@@ -317,21 +317,38 @@ b. Grab the upstream link name and run the below command to remove it.
 
 ## Shovel Setup:
 
+> [!NOTE]
+> If you have already tested federation link between machine 1 and machine 2, then you need not repeat creation of certs, exchange of certs and start of agents in volttron. You can proceed to step 2. 
+
 1. Make sure root CA certificates are copied over and concatenated to local root CA certificates so that RabbitMQ broker
-can trust them. Also install master driver and listener agents on machine 1. Follow steps 1-6 of Federation Setup section.
+can trust them. Also install master driver and listener agents on machine 1. Refer to steps 1-5 of Federation Setup section for instructions.
 
 2. To create a shovel link to send messages from machine 2 to machine 1, configure shovel options in config file to point to hostname,
 port and virtual host of machine 1 and then create shovel parameter.
 
 On machine 2, 
-```
-cd ~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client
-```
+  ```
+  cd ~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client
+  ```
 
-Update shovel parameters (hostname, port) in the config file.
-```
-python create_parameter.py create shovel
-```
+  Update shovel parameters (hostname, port) in the config file.
+  
+  ```
+  shovel:
+    remote_host: '<hostname of volttron machine(machine1)'
+    remote_amqps_port: <amqps port on machine1. Default is 5671>
+    remote_virtual_host: '<Virtual host name on machine1. Defaults to volttron>'
+    publish_topic: '__pubsub__.test.hello.volttron'
+  ```
+  
+  > [!NOTE]
+  >  To establish shovel connection, if you like to use a different client certificate than the one used for federation you can repeat    "make client-cert CN=<name of client>" with a different CN value and point to the newly generated certificates in the config file - i.e. update value for client_publis_cert and client_private_cert. 
+
+    Run the below command to create shovel parameter 
+    
+    ```
+    python create_parameter.py create shovel
+    ```
 
 3. Run the test client program. The shovel will forward 'hello' messages from the test program to VOLTTRON instance on machine 1.
 ```
