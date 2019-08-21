@@ -109,7 +109,7 @@ by same CA.
 14. Start RabbitMQ client program that publishes and subscribes to same topic '__pubsub__.test.hello.#'. You should start
 seeing the data being received. 
     ```
-    python rabbitmq_gevent_publisher.py
+    python rabbitmq_gevent_client.py
     ```
 On machine 2 terminal, you will be able to see data being received for topic- 'Topic:__pubsub__.test.hello.volttron':
     ```
@@ -156,7 +156,7 @@ And to copy from machine 2 to machine 1
     ```
 
 4. On machine 1, modify Listener agent to subscribe to all topics from all pathforms. Open the file <volttron_source_home>/examples/ListenerAgent/listener/agent.py.
-Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.subscribe('pubsub', 'devices', all_platforms=True)
+Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.subscribe('pubsub', '', all_platforms=True)
 
 5. Install listener agent and master driver agent with a fake device and restart VOLTTRON. Start both agents
 
@@ -175,7 +175,7 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
 
 8. Start the client program. This program subscribes to the volttron exchange upstream and publishes to the upstream 50 times. The federation status is not shown if there are no subscribers bound to the 'volttron' exchange. 
     ```
-    python rabbitmq_gevent_publisher.py
+    python rabbitmq_gevent_client.py
     ```
 
 9. Check the federation status from a different terminal on machine 2
@@ -208,10 +208,10 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
     Do you want to set CONFIGURE permission  [Y/n]
     ```
 
-11. Rerun rabbitmq_gevent_publisher.py if it is not running. This will subscribe to the machine1's rabbitmq topic and also publish to it 
+11. Rerun rabbitmq_gevent_client.py if it is not running. This will subscribe to the machine1's rabbitmq topic and also publish to it 
 
     ```
-    python rabbitmq_gevent_publisher.py
+    python rabbitmq_gevent_client.py
     ```
     You should start seeing device data being received on the machine 2.
 
@@ -257,36 +257,43 @@ When prompted provide upstream hostname as machine2's hostname and provide virtu
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl -p test set_permissions v1-admin ".*" ".*" ".*"
     ```
 
-3. Run the 
-14. You should start seeing messages with 'hello' topic in the VOLTTRON logs now.
+3. Run the rabbitmq_gevent_client.py to publish messages to the VOLTTRON machine (machine 1)
+	```
+    python rabbitmq_gevent_client.py
+    ```
+
+4. You should start seeing messages with 'hello' topic in machine1's VOLTTRON logs now.
 
 On machine 1:
-```
-2019-08-19 19:52:25,016 (listeneragent-3.2 10844) listener.agent INFO: Peer: pubsub, Sender: test-admin:, Bus: test, Topic: hello, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message: 
-'Hello from NON volttron client'
-```
+	```
+	(volttron)d3x140@node-zmq: tail -f volttron.log
+	2019-08-19 19:52:25,016 (listeneragent-3.2 10844) listener.agent INFO: Peer: pubsub, Sender: test-admin:, Bus: test, Topic: hello, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message: 
+	'Hello from NON volttron client'
+	```
 
-15. To delete the federation link to upstream server on machine 1.
+## Steps to delete federation link if needed
+
+1. To delete the federation link to upstream server on machine 1.
 
 On machine 2:
 
-```
-python create_parameter.py delete federation
-```
+	```
+	python create_parameter.py delete federation
+	```
 
-15. To delete the federation link to upstream server on machine 2, use 'volttron-ctl' utility command.
+2. To delete the federation link to upstream server on machine 2, use 'volttron-ctl' utility command.
 
 On machine 1,
 
-a. Get the federation upstream parameter nam
-```
-vctl rabbitmq list-federation-parameters
-```
+a. Get the federation upstream parameter name
+	```
+	vctl rabbitmq list-federation-parameters
+	```
 
 b. Grab the upstream link name and run the below command to remove it.
-```
-vctl rabbitmq remove-federation-parameters upstream-volttron2-rabbit-2
-```
+	```
+	vctl rabbitmq remove-federation-parameters <name from list-federation-parameters>
+	```
 
 ## Shovel Setup:
 
@@ -308,7 +315,7 @@ python create_parameter.py create shovel
 
 3. Run the test client program. The shovel will forward 'hello' messages from the test program to VOLTTRON instance on machine 1.
 ```
-python rabbitmq_gevent_publisher.py
+python rabbitmq_gevent_client.py
 ```
 
 4. Create user 'test-admin' to get access to the VOLTTRON instance on machine 1.
