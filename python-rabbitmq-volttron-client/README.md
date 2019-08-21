@@ -108,6 +108,7 @@ by same CA.
 
 14. Start RabbitMQ client program that publishes and subscribes to same topic '__pubsub__.test.hello.#'. You should start
 seeing the data being received. 
+
     ```
     python rabbitmq_gevent_client.py
     ```
@@ -126,7 +127,9 @@ On machine 2 terminal, you will be able to see data being received for topic- 'T
     Publishing to topic: __pubsub__.test.hello.volttron, i:4
     Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
     ```
+    
 This verifies that we are able to successfully subscribe andd publish to the local message bus. 
+
 
 ## Federation setup to get data from VOLTTRON (machine 1) to non VOLTTRON client (machine 2):
 
@@ -237,7 +240,7 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
 	    {"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
     ```
         
-        
+	
 ## Federation setup to get data from non VOLTTRON client (machine 2) to VOLTTRON (machine 1) :
 
 Since we have already exchanged the root CA certificates between the two machines, we don't have to repeat it for the reverse direction federation setup.
@@ -286,6 +289,7 @@ On machine 1:
 	'Hello from NON volttron client'
 	```
 
+
 ## Steps to delete federation link if needed
 
 1. To delete the federation link to upstream server on machine 1.
@@ -309,6 +313,7 @@ b. Grab the upstream link name and run the below command to remove it.
 	```
 	vctl rabbitmq remove-federation-parameters <name from list-federation-parameters>
 	```
+
 
 ## Shovel Setup:
 
