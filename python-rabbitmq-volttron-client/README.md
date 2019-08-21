@@ -138,7 +138,7 @@ This verifies that we are able to successfully subscribe andd publish to the loc
     ```
     scp $VOLTTRON_HOME/certificates/certs/<volttron_instancename>-root-ca.crt <user>@<machine2 ip or hostname>:<path on machine2>
     ```
-And to copy from machine 2 to machine 1
+    And to copy from machine 2 to machine 1
 
     ```
     scp ~/tls-gen/basic/result/ca_certificate.pem <username>@<hostname or ip of machine1>:<path on machine1>
