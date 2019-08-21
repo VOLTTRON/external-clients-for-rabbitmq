@@ -179,23 +179,25 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
     ```
 
 9. Check the federation status from a different terminal on machine 2
+
     ```
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
     ```
    This should show the status with auth_failure,"ACCESS_REFUSED"
+   
    ```
-   d3x140@central:~/external-clients-for-rabbitmq/python-rabbitmq-volttron-client$ ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
-[[{exchange,<<"volttron">>},
-  {upstream_exchange,<<"volttron">>},
-  {type,exchange},
-  {vhost,<<"test">>},
-  {upstream,<<"non-volttron-federation">>},
-  {id,<<"6c7e2093">>},
-  {status,error},
-  {error,{auth_failure,"ACCESS_REFUSED - Login was refused using authentication mechanism EXTERNAL. For details see the broker logfile."}},
-  {uri,<<"amqps://node-zmq:5671/volttron">>},
-  {timestamp,{{2019,8,20},{17,12,33}}}]]
-
+   d3x140@central: ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl eval 'rabbit_federation_status:status().'
+	[[{exchange,<<"volttron">>},
+	  {upstream_exchange,<<"volttron">>},
+	  {type,exchange},
+	  {vhost,<<"test">>},
+	  {upstream,<<"non-volttron-federation">>},
+	  {id,<<"6c7e2093">>},
+	  {status,error},
+	  {error,{auth_failure,"ACCESS_REFUSED - Login was refused using authentication mechanism EXTERNAL. For details see the broker  
+	  logfile."}},
+	  {uri,<<"amqps://node-zmq:5671/volttron">>},
+	  {timestamp,{{2019,8,20},{17,12,33}}}]]
    ```
    This status means that we are able to connect successfully but the user is not authorized to access the virtual host on the remote machine
 
@@ -213,14 +215,26 @@ Search for @PubSub.subscribe('pubsub', '') and replace that line with @PubSub.su
     ```
     python rabbitmq_gevent_client.py
     ```
+    
     You should start seeing device data being received on the machine 2.
 
     On machine 2:
     ```
-    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-    Publishing to topic: __pubsub__.test.hello.volttron, i:19
-    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-    Incoming message from VOLTTRON. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    Message: {"headers":{"Date":"2019-08-20T02:48:00.002375+00:00","TimeStamp":"2019-08-20T02:48:00.002375+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-20T02:48:00.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
+	    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": 
+	    "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", 
+	    "min_compatible_version": "0.1"}}
+	    Publishing to topic: __pubsub__.test.hello.volttron, i:19
+	    Incoming message from local RabbitMQ publisher. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": 
+	    "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", 
+	    "min_compatible_version": "0.1"}}
+	    Incoming message from VOLTTRON. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    Message: 
+	    {"headers":{"Date":"2019-08-20T02:48:00.002375+00:00","TimeStamp":"2019-08-
+	    20T02:48:00.002375+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-
+	    20T02:48:00.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":
+	    {"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":
+	    {"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":
+	    {"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":
+	    {"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
     ```
         
         
@@ -267,7 +281,8 @@ When prompted provide upstream hostname as machine2's hostname and provide virtu
 On machine 1:
 	```
 	(volttron)d3x140@node-zmq: tail -f volttron.log
-	2019-08-19 19:52:25,016 (listeneragent-3.2 10844) listener.agent INFO: Peer: pubsub, Sender: test-admin:, Bus: test, Topic: hello, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message: 
+	2019-08-19 19:52:25,016 (listeneragent-3.2 10844) listener.agent INFO: Peer: pubsub, Sender: test-admin:, Bus: test, Topic: 
+	hello, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message: 
 	'Hello from NON volttron client'
 	```
 
@@ -371,10 +386,17 @@ Here we assume, 'v1' is instance name of VOLTTRON instance running on machine 1.
 
 8. You should start seeing messages for 'devices' topic on machine 2.
 
-```
-Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
-Incoming message from local RabbitMQ publisher. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    Message: {"headers":{"Date":"2019-08-20T17:52:05.001937+00:00","TimeStamp":"2019-08-20T17:52:05.001937+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-20T17:52:05.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
-```
+	```
+	Incoming message from VOLTTRON. Topic:__pubsub__.test.hello.volttron    Message: {"bus": "test", "message": "Hello from NON volttron client", "sender": "test-admin", "headers": {"max_compatible_version": "0.5", "min_compatible_version": "0.1"}}
+	Incoming message from local RabbitMQ publisher. Topic:__pubsub__.collector1.devices.fake-campus.fake-building.fake-device.all.#    
+	Message: {"headers":{"Date":"2019-08-20T17:52:05.001937+00:00","TimeStamp":"2019-08-
+	20T17:52:05.001937+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-
+	20T17:52:05.000000+00:00"},"message":[{"Heartbeat":true,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":
+	{"units":"On/Off","tz":"US/Pacific","type":"integer"},"PowerState":
+	{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":
+	{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"ValveState":
+	{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
+	```
 
 9. To delete the shovel link to machine 1.
 
