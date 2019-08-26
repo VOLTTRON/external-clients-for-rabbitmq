@@ -20,19 +20,20 @@ instance.
 
 2. Stop VOLTTRON and RabbitMQ broker to enable MQTT plugin.
 
-```
-cd <path-to-VOLTTRON-source-code>
-./stop-volttron
-./stop-rabbimq
-```
+    ```
+    cd <path-to-VOLTTRON-source-code>
+    ./stop-volttron
+    ./stop-rabbimq
+    ```
 
 3. Enable MQTT plugin
 
-```
-~/home/volttron/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_mqtt
-```
+    ```
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_mqtt
+    ```
 
-4. Edit rabbitmq.conf in RabbitMQ installation path to add MQTT specific configuration.
+4. Edit rabbitmq.conf in RabbitMQ installation path to add MQTT specific configuration. Path of rabbitmq.conf will be
+~/rabbitmq_server/rabbitmq_server-3.7.7/etc/rabbitmq/rabbitmq.conf
 
    ```
    ### MQTT specific configurations
@@ -61,47 +62,54 @@ cd <path-to-VOLTTRON-source-code>
 
     ```
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user volttron1.paho-test default
-    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_user_tags mqtt-test administrator
-    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_permissions -p volttron1.paho-test ".*" ".*" ".*"
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_user_tags volttron1.paho-test administrator
+    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_permissions -p volttron volttron1.paho-test ".*" ".*" ".*"
     ```
 
 7. Install master driver, listener agent and restart VOLTTRON. Tail the volttron.log to see all the incoming messages.
 
-```
-cd <path-to-VOLTTRON-source-code>
-./stop-volttron
-vcfg --agent master_driver
-./start-volttron
-vctl start --tag master_driver
-scripts/core/upgrade-listener
-tail -f volttron.log
-```
+    ```
+    cd <path-to-VOLTTRON-source-code>
+    ./stop-volttron
+    vcfg --agent master_driver
+    ./start-volttron
+    vctl start --tag master_driver
+    scripts/core/upgrade-listener
+    tail -f volttron.log
+    ```
 
 8. Clone python based MQTT client from github.
 
-```
-cd ~
-git clone https://github.com/VOLTTRON/external-clients-for-rabbitmq.git
-cd ~/external-clients-for-rabbitmq/mqtt-volttron-client/
-```
+    ```
+    cd ~
+    git clone https://github.com/VOLTTRON/external-clients-for-rabbitmq.git
+    cd ~/external-clients-for-rabbitmq/mqtt-volttron-client/
+    ```
 
 9. Install all the pre-requesites
-8. Update config file in MQTT client directory (cd external-clients-for-rabbitmq/mqtt-volttron-client/) with hostname,
+
+    ```
+    pip install -r requirements.txt
+    ```
+
+10. Update config file in MQTT client directory (cd external-clients-for-rabbitmq/mqtt-volttron-client/) with hostname,
 port, self signed CA certificate of VOLTTRON instance, path of 'paho-test' client certificates, username and password of newly created user in step 6.
 
-9. Start MQTT client on a different terminal.
-```
-python mqtt_client.py
-```
+11. Start MQTT client on a different terminal.
 
-10. You should start seeing messages being received from VOLTTRON on the terminal.
+    ```
+    python mqtt_client.py
+    ```
 
-```
-
-```
-
-11. You should be seeing messages from MQTT client being received by listener agent. Check for these messages in volttron.log on terminal 1.
+12. You should start seeing messages being received from VOLTTRON on the terminal.
 
 ```
+26T19:28:30.001479+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-26T19:28:30.000000+00:00"},"message":[{"Heartbeat":true,"EKG_Sin":5.66553889764798e-16,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"EKG_Sin":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
+```
 
+13. You should be seeing messages from MQTT client being received by listener agent. Check for these messages in volttron.log on terminal 1.
+
+```
+2019-08-26 12:28:31,037 (listeneragent-3.2 6091) listener.agent INFO: Peer: pubsub, Sender: paho-mqtt:, Bus: mqtt, Topic: paho, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message:
+'Hello from MQTT client'
 ```
