@@ -1,0 +1,9 @@
+#host parameter is mandatory parameter. fully qualified domain name
+host: 'volttron-VirtualBox'
+mqtt_port: 8883
+ca_certfile: '/home/volttron/.mqtt_test/certificates/certs/volttron1-trusted-cas.crt'
+client_public_cert: '/home/volttron/.mqtt_test/certificates/certs/volttron1.paho-test.crt'
+client_private_cert: '/home/volttron/.mqtt_test/certificates/private/volttron1.paho-test.pem'
+user: 'volttron1.paho-test'
+password: 'default'
+
