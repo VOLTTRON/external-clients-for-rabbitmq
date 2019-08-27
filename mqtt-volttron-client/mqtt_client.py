@@ -37,9 +37,15 @@ class MQTTClient:
         self.running = False
         self.connection_ready = False
 
-
-    # The callback for when the client receives a CONNACK response from the server.
     def on_connect(self, client, userdata, flags, rc):
+        """
+        The callback for when the client receives a CONNACK response from the server.
+        :param client: connection handle
+        :param userdata:
+        :param flags:
+        :param rc: error code
+        :return:
+        """
         print("Client Connected with result code {}".format(rc))
         if not rc:
             self.connection_ready = True
@@ -54,12 +60,30 @@ class MQTTClient:
             self.running = False
 
     def on_disconnect(self, client, userdata, rc):
+        """
+        The callback for when client gets disconnected
+        :param client: connection handle
+        :param userdata:
+        :param rc: error code
+        :return:
+        """
         print("Client has disconnected {}".format(rc))
 
     def on_message(self, client, userdata, msg):
+        """
+        The callback for when new message is received
+        :param client: connection handle
+        :param userdata:
+        :param msg: message
+        :return:
+        """
         print("Client has received message from VOLTTRON: {}".format(msg.payload))
 
     def publish_loop(self):
+        """
+        Method to continuously publish to MQTT broker
+        :return:
+        """
         headers = dict(min_compatible_version='0.1',
                                max_compatible_version='0.5')
         topic = "__pubsub__/volttron1/paho/hello"
@@ -68,9 +92,12 @@ class MQTTClient:
                             bus='mqtt',
                             sender='paho-mqtt',
                             message='Hello from MQTT client')
-        while self.running:
+        max_publish = 50
+        i = 0
+        while self.running or i < max_publish:
             print("Publishing to :{}".format(topic))
             self.client.publish(topic, json.dumps(message_body))
+            i += 1
             gevent.sleep(1)
 
 
