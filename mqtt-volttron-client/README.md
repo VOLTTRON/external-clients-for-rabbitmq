@@ -9,16 +9,16 @@ instance.
 
 3. Using the activated environment from step 1 (Note: change the paths to files below to be specific to your environment)
 
-    a. Create a VOLTTRON private key / cert for the MQTT client to connect with
+    Create a VOLTTRON private key / cert for the MQTT client to connect with
     ```
     vctl certs create-ssl-keypair paho-test
     ```
 
     New public cert and private key for MQTT client will be created inside $VOLTTRON_HOME. Actual path will be
     $VOLTTRON_HOME/certificates/certs/volttron1.paho-test.crt and $VOLTTRON_HOME/certificates/private/volttron1.paho-test.pem.
-    Paths for these certificates will be needed later in step 7.
+    Paths for these certificates will be needed later in step 12.
 
-2. Stop VOLTTRON and RabbitMQ broker to enable MQTT plugin.
+4. Stop VOLTTRON and RabbitMQ broker to enable MQTT plugin.
 
     ```
     cd <path-to-VOLTTRON-source-code>
@@ -26,13 +26,13 @@ instance.
     ./stop-rabbimq
     ```
 
-3. Enable MQTT plugin
+5. Enable MQTT plugin
 
     ```
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-plugins enable rabbitmq_mqtt
     ```
 
-4. Edit rabbitmq.conf in RabbitMQ installation path to add MQTT specific configuration. Path of rabbitmq.conf will be
+6. Edit rabbitmq.conf in RabbitMQ installation path to add MQTT specific configuration. Path of rabbitmq.conf will be
 ~/rabbitmq_server/rabbitmq_server-3.7.7/etc/rabbitmq/rabbitmq.conf
 
    ```
@@ -52,13 +52,13 @@ instance.
    mqtt.prefetch         = 10
    ```
 
-5. Restart RabbitMQ broker.
+7. Restart RabbitMQ broker.
 
     ```
    ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmq-server -detached
    ```
 
-6. Add a new RabbitMQ user for the MQTT client and set permissions to use VOLTTRON's virtual host
+8. Add a new RabbitMQ user for the MQTT client and set permissions to use VOLTTRON's virtual host. User name her should match the certificates created in step 3
 
     ```
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl add_user volttron1.paho-test default
@@ -66,7 +66,7 @@ instance.
     ~/rabbitmq_server/rabbitmq_server-3.7.7/sbin/rabbitmqctl set_permissions -p volttron volttron1.paho-test ".*" ".*" ".*"
     ```
 
-7. Install master driver, listener agent and restart VOLTTRON. Tail the volttron.log to see all the incoming messages.
+9. Install master driver, listener agent and restart VOLTTRON. Tail the volttron.log to see all the incoming messages.
 
     ```
     cd <path-to-VOLTTRON-source-code>
@@ -78,36 +78,44 @@ instance.
     tail -f volttron.log
     ```
 
-8. Clone python based MQTT client from github.
+10. From a different terminal on the same machine, Clone python based MQTT client from github in your home directory
 
     ```
     cd ~
     git clone https://github.com/VOLTTRON/external-clients-for-rabbitmq.git
+    ```
+
+11. Install all the pre-requesites
+
+    ```
     cd ~/external-clients-for-rabbitmq/mqtt-volttron-client/
-    ```
-
-9. Install all the pre-requesites
-
-    ```
     pip install -r requirements.txt
     ```
+    
+    For the above commands to work you need pip and setuptools installed. If you see errors related to pip or setuptools when running above command use the below commands to install pip and python-setup tools and then re run above commands
+    
+    ```
+    sudo apt-get install python-pip
+    sudo apt-get install -y python-setuptools
+    ```
 
-10. Update config file in MQTT client directory (cd external-clients-for-rabbitmq/mqtt-volttron-client/) with hostname,
-port, self signed CA certificate of VOLTTRON instance, path of 'paho-test' client certificates, username and password of newly created user in step 6.
 
-11. Start MQTT client on a different terminal.
+12. Update config file in MQTT client directory (cd external-clients-for-rabbitmq/mqtt-volttron-client/) with hostname,
+port, self signed CA certificate of VOLTTRON instance, path of 'paho-test' client certificates, username and password of newly created user in step 3.
+
+13. Start MQTT client on a different terminal.
 
     ```
     python mqtt_client.py
     ```
 
-12. You should start seeing messages being received from VOLTTRON on the terminal.
+14. You should start seeing messages being received from VOLTTRON on the terminal.
 
 ```
 26T19:28:30.001479+00:00","min_compatible_version":"5.0","max_compatible_version":"","SynchronizedTimeStamp":"2019-08-26T19:28:30.000000+00:00"},"message":[{"Heartbeat":true,"EKG_Sin":5.66553889764798e-16,"PowerState":0,"temperature":50.0,"ValveState":0},{"Heartbeat":{"units":"On/Off","tz":"US/Pacific","type":"integer"},"ValveState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"PowerState":{"units":"1/0","tz":"US/Pacific","type":"integer"},"temperature":{"units":"Fahrenheit","tz":"US/Pacific","type":"integer"},"EKG_Sin":{"units":"1/0","tz":"US/Pacific","type":"integer"}}],"sender":"platform.driver","bus":""}
 ```
 
-13. You should be seeing messages from MQTT client being received by listener agent. Check for these messages in volttron.log on terminal 1.
+15. You should be seeing messages from MQTT client being received by listener agent. Check for these messages in volttron.log on terminal 1.
 
 ```
 2019-08-26 12:28:31,037 (listeneragent-3.2 6091) listener.agent INFO: Peer: pubsub, Sender: paho-mqtt:, Bus: mqtt, Topic: paho, Headers: {'max_compatible_version': '0.5', 'min_compatible_version': '0.1'}, Message:
