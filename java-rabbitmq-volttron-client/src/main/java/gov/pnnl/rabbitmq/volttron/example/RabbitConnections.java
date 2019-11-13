@@ -1,4 +1,4 @@
-package rabbitmq.volttron.connection;
+package gov.pnnl.rabbitmq.volttron.example;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class RabbitConnections {
 		char[] trustPassphrase = Config.trustStorePassword.toCharArray();
 		KeyStore tks = KeyStore.getInstance("JKS");
 		tks.load(new FileInputStream(Config.trustStorePath), trustPassphrase);
-		
+
 		TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 		tmf.init(tks);
 
