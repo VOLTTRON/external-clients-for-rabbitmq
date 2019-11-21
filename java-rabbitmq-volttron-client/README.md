@@ -18,8 +18,8 @@ The following directions assume:
 1. Create a VOLTTRON instance using https://volttron.readthedocs.io/en/develop/setup/index.html setup for RabbitMQ.
 1. Make sure volttron is running. (run the command vctl status)
 1. Change directory (cd) out of the volttron directory (cd ..)
-1. Clone the repository (git clone https://github.com/VOLTTRON/java-rabbitmq-volttron-client)
-1. cd into the newly cloned directory (cd java-rabbitmq-volttron-client)
+1. Clone the repository (git clone https://github.com/VOLTTRON/external-clients-for-rabbitmq)
+1. cd into the newly cloned directory (cd external-clients-for-rabbitmq/java-rabbitmq-volttron-client)
 
 The following steps will create a java key store and java trust store to connect to a secure rabbitmq bus and add a user to the
 rabbitmq management in order for the client to connect.  The following steps should be run from a volttron rabbitmq activated environment.   
