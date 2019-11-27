@@ -10,7 +10,6 @@
 The following directions assume:
 
 - a default VOLTTRON_HOME (~/.volttron)
-- an instance name of volttron1
 - all passwords associated with the instructions must be volttron
 
 ## Procedure
@@ -45,12 +44,12 @@ rabbitmq management in order for the client to connect.  The following steps sho
  1. Allow the user to access the volttron virtual host (assumes default virtual host in rabbitmq_config.yml from step 1).
 	
  	````# vctl rabbitmq add-user instancename.user password
-	vctl rabbitmq add-user v2.jackpot volttron
+	vctl rabbitmq add-user <INSTANCE_NAME>.jackpot volttron
 	````
 	
  1. Step 1 of this section created two files needed for connecting to the secure rabbitmq bus (jackpot-keystore.jks and rabbitmq.ts) respectively.  Modify the file 
  	
- 	````test-rabbitmq-volttron-connection/src/main/java/gov/pnnl/rabbitmq/volttron/example/Config.java```` 
+ 	````/src/main/java/gov/pnnl/rabbitmq/volttron/example/Config.java```` 
  	
  	specifying the correct locations of these files for the variables keyStorePath and trustStorePath.
 
@@ -62,7 +61,7 @@ The following commands should be run from the root of the java-rabbitmq-volttron
 	
 	````./gradlew jarWithDependencies````
 	
- 1. Execute the test by runing
+ 1. Execute the test by running
 
 	````java -jar build/libs/test-rabbitmq-volttron-connection-all-1.0.1.jar```` 
 	
