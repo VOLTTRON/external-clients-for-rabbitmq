@@ -1,6 +1,6 @@
 gevent-pika==0.2
 gevent==1.1.2
 PyYAML==3.12
-cryptography==2.2.2
+cryptography==3.2
 requests[security]==2.21.0
 
